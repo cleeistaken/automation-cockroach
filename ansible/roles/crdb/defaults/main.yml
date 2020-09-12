@@ -1,0 +1,17 @@
+---
+
+os_create_hosts_file: False
+os_hosts_file: /etc/hosts
+
+crdb_advertise_addr: False
+crdb_use_hosts_file: False
+crdb_service_template: cockroachdb.service.j2
+crdb_executable: /usr/local/bin/cockroach
+crdb_service: cockroachdb
+crdb_db_user: root
+#crdb_db_port: 26257
+#crdb_management_port: 8080
+
+crdb_tcp_ports:
+  - 8080
+  - 26257 

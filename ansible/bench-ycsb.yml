@@ -1,0 +1,109 @@
+---
+- name: Run YSCB Test
+  hosts:
+    - crdb_test_client
+  gather_facts: yes
+  any_errors_fatal: true  
+
+  vars:
+    workload: "ycsb"
+    init_options: "--drop"
+    run_options: "--tolerate-errors"
+    bench_folder: /opt/cockroach-tests
+    bench_run_file: ycsb-run
+    bench_init_file: ycsb-init
+    bench_run_template: ycsb-run.sh.j2
+    bench_init_template: ycsb-init.sh.j2
+    crdb_servers: "{{ hostvars['localhost']['groups']['crdb'] }}"
+
+  vars_prompt:
+    - name: workload_type
+      private: no
+      prompt: "YCSB Workload type (A, B, C, D, E, or F)"
+
+    - name: init_inserts
+      private: no
+      prompt: "Initialization insert count"
+
+    - name: run_duration
+      private: no
+      prompt: "Test duration in seconds"
+
+    - name: concurency
+      private: no
+      prompt: "Threads"
+ 
+  tasks:
+    - name: Get current timestamp
+      set_fact:
+        test_datetime: "{{ ansible_date_time.epoch }}"
+
+    - name: Create output files
+      set_fact:
+        test_folder: "{{ test_datetime }}_W{{ workload }}-{{ workload_type }}_D{{ run_duration }}_C{{ concurency }}_I{{ init_inserts }}"
+        test_run_file: "{{ bench_run_file }}-{{ workload }}-{{ workload_type }}-{{ run_duration }}-{{ concurency }}.sh"
+        test_init_file: "{{ bench_init_file }}-{{ workload }}-{{ workload_type }}-{{ init_inserts }}.sh"
+        test_log_init: "init_{{ inventory_hostname }}.log"
+        test_log_run: "run_{{ inventory_hostname }}.log"
+
+    - name: Include all .json and .jsn files in vars/all and all nested directories 
+      include_vars:
+        file: roles/crdb/defaults/main.yml 
+
+    - name: Ensures dir exists
+      file: 
+        path: "{{ test_datetime }}" 
+        state: directory
+        mode: 0775
+        owner: "{{ ansible_user }}"
+        group: "{{ ansible_user }}"
+
+    - name: create init script
+      template:
+        src: "{{ bench_init_template }}"
+        dest: "{{ test_datetime }}/{{ test_init_file }}"
+        mode: 0775
+        owner: "{{ ansible_user }}"
+        group: "{{ ansible_user }}"
+
+    - name: create run script
+      template:
+        src: "{{ bench_run_template }}"
+        dest: "{{ test_datetime }}/{{ test_run_file }}"
+        mode: 0775
+        owner: "{{ ansible_user }}"
+        group: "{{ ansible_user }}"
+
+    - name: Workload init
+      shell: "cd {{ test_datetime }}; ./{{ test_init_file }}"
+      when: inventory_hostname == play_hosts[0]
+
+    - name: Workload run
+      shell: "cd {{ test_datetime }}; ./{{ test_run_file }}"
+
+    - name: Retrieve init file
+      fetch:
+        src: "{{ test_datetime }}/{{ test_init_file }}"
+        dest: "{{ result_folder }}/{{ test_folder }}/scripts/{{ inventory_hostname }}-{{ test_init_file }}"
+        flat: yes
+      when: inventory_hostname == play_hosts[0]
+
+    - name: Retrieve run file
+      fetch:
+        src: "{{ test_datetime }}/{{ test_run_file }}"
+        dest: "{{ result_folder }}/{{ test_folder }}/scripts/{{ inventory_hostname }}-{{ test_run_file }}"
+        flat: yes
+ 
+    - name: Retrieve init log
+      fetch:
+        src: "{{ test_datetime }}/{{ test_log_init }}"
+        dest: "{{ result_folder }}/{{ test_folder }}/"
+        flat: yes
+      when: inventory_hostname == play_hosts[0]
+
+    - name: Retrieve run log
+      fetch:
+        src: "{{ test_datetime }}/{{ test_log_run }}"
+        dest: "{{ result_folder }}/{{ test_folder }}/"
+        flat: yes
+

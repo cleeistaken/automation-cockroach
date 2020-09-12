@@ -1,0 +1,10 @@
+---
+- name: generate hosts file
+  include: generate_hosts_file.yml
+  when: (use_hosts_file | default(os_create_hosts_file) | bool) 
+
+- name: initialize disks
+  include: initialize_disks.yml
+
+- name: create, enable, and start CockroachDB service
+  include: create_service.yml

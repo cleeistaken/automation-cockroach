@@ -1,0 +1,11 @@
+---
+- name: restart_chrony
+  systemd:
+    name: chronyd
+    enabled: yes
+    state: restarted
+    masked: no
+
+- name: reboot_machine
+  reboot:
+    reboot_timeout: 300

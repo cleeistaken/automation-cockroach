@@ -1,0 +1,33 @@
+---
+- name: install requirements
+  yum:
+    name:
+      - chrony
+
+- name: create chrony configuration
+  template:
+    src: "{{ chrony_conf_template }}"
+    dest: "{{ chrony_conf_file }}"
+    owner: root
+    group: root
+    mode: 0644
+  notify:
+    - restart_chrony
+
+- name: start and enable the chrony service
+  systemd:
+    name: "{{ chrony_service }}"
+    enabled: yes
+    state: started
+    masked: no
+    daemon_reload: yes
+
+- name: configure limits.conf
+  blockinfile:
+    path: /etc/security/limits.conf
+    insertafter: EOF
+    block: |
+      *              soft     nofile          65536
+      *              hard     nofile          65536
+  notify:
+    - reboot_machine

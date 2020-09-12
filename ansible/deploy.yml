@@ -1,0 +1,14 @@
+---
+- name: Common configuration
+  hosts:
+    - crdb
+    - crdb_test_client
+  roles:
+    - common
+    - cockroach
+
+- name: CockroachDB servers
+  hosts: 
+    - crdb
+  roles:
+    - crdb

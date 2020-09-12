@@ -1,0 +1,99 @@
+---
+- name: install requirements
+  yum:
+    name:
+      - policycoreutils-python
+
+- name: configure seport tcp ports
+  seport:
+    ports: "{{ item }}"
+    proto: tcp
+    setype: http_port_t
+    state: present
+  loop: "{{ vars.crdb_tcp_ports }}"
+
+- name: configure firewalld
+  firewalld:
+    port: "{{ item ~ '/tcp' }}"
+    permanent: yes
+    immediate: yes
+    state: enabled
+  loop: "{{ vars.crdb_tcp_ports }}"
+
+- name: gather hardware facts
+  setup:
+    gather_subset:
+      - hardware
+
+- name: get datastores
+  set_fact:
+    datastores: "{{ ansible_mounts | json_query('[].mount') | map('regex_search', '/data[0-9]*') | select('string') | list }}"
+
+- name: list datastores
+  debug:
+    var: datastores
+
+- name: create bootstrap server list
+  set_fact:
+    bootstrap: "{{play_hosts[:3]}}"
+
+- name: bootstrap servers
+  debug:
+    var: bootstrap
+
+- name: create cockroachdb.service
+  template:
+    src: "{{ crdb_service_template }}"
+    dest: "/etc/systemd/system/{{ crdb_service }}.service"
+    mode: 0644
+  register: cockroach_systemd_service
+
+- name: print inventory hostname
+  debug:
+    var: "{{ inventory_hostname_short }}"
+
+- name: start and enable the first bootstrap server
+  systemd:
+    name: "{{ crdb_service }}"
+    enabled: yes
+    state: started
+    masked: no
+  when: inventory_hostname == play_hosts[0]
+  register: first_bootstrap
+
+- name: start and enable the remaining bootstrap servers
+  systemd:
+    name: "{{ crdb_service }}"
+    enabled: yes
+    state: started
+    masked: no
+  when: inventory_hostname in play_hosts[1:3]
+  register: other_bootstrap
+
+- name: start and enable remaining servers
+  systemd:
+    name: "{{ crdb_service }}"
+    enabled: yes
+    state: started
+    masked: no
+  when: inventory_hostname in play_hosts[3:]
+  register: non_bootstrap
+
+- name: restart servers if cockroach versions changed
+  systemd:
+    name: "{{ crdb_service }}"
+    state: restarted
+  when:
+    - (((first_bootstrap is success) or (other_bootstrap is success) or (non_bootstrap is success)) and (folder_symlink is changed)) or (cockroach_systemd_service is changed)
+
+- name: check if the database is initialized
+  shell: /usr/local/bin/cockroach sql --insecure --host {{play_hosts[0]}} --execute "select 1"
+  register: result
+  changed_when: false
+  failed_when: result.rc != 1 and result.rc != 0
+  when: inventory_hostname == play_hosts[0]
+
+- name: initialize the database
+  shell: /usr/local/bin/cockroach init --insecure --host {{play_hosts[0]}}
+  when: (inventory_hostname == play_hosts[0]) and (result.rc != 0)
+

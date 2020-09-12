@@ -1,0 +1,52 @@
+---
+- name: gather hardware facts
+  setup:
+    gather_subset:
+      - hardware
+
+- name: get disks (/dev/sd*) except sda (OS)
+  set_fact:
+    disks: "{{ disks|default([]) + [ '/dev/' ~ item ] }}"
+  loop: "{{ hostvars[inventory_hostname].ansible_devices.keys() | map('regex_search', 'sd([b-z]+|[a-z]{2})') | select('string') | list }}"
+
+- name: list disks
+  debug:
+    var: disks
+
+- name: get mounted devices
+  set_fact:
+    mounted_devices: "{{ ansible_mounts|json_query('[].device') }}"
+
+- name: List mounted devices
+  debug:
+    var: mounted_devices
+
+- name: partition disks
+  parted:
+    device: "{{ item }}"
+    number: 1
+    state: present
+  when: item not in mounted_devices
+  loop: "{{ vars.disks }}"
+
+- name: create filesystem
+  filesystem:
+    fstype: ext4
+    dev: "{{ item }}1"
+  when: item not in mounted_devices
+  loop: "{{ vars.disks }}"
+  loop_control:
+    index_var: my_index
+
+- name: mount data volumes
+  mount:
+    src: "{{ item }}1"
+    path: "/data{{ my_index }}"
+    opts: defaults
+    state: mounted
+    fstype: ext4
+  when: item not in mounted_devices
+  loop: "{{ vars.disks }}"
+  loop_control:
+    index_var: my_index
+

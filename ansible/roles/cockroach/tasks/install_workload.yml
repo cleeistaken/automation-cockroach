@@ -1,0 +1,6 @@
+---
+- name: download and extract workload executable
+  get_url:
+    url: "{{ vars.workload_url }}"
+    dest: "{{ vars.workload_executable }}"
+    mode: '755'

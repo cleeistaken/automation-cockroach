@@ -1,0 +1,22 @@
+#!/bin/bash
+#
+# Workload init
+#
+
+url_one="\
+{% if crdb_servers is defined and crdb_servers is iterable %}
+postgres://root@{{ crdb_servers[0] }}:{{ crdb_db_port }}?sslmode=disable\
+{% endif %}
+"
+
+echo "Starting initialization at `date`" |& tee -a {{ test_log_init }}
+
+echo "Dropping database if it exists" |& tee -a {{ test_log_init }}
+cockroach sql --execute="drop database if exists {{ workload }}" --url=$url_one |& tee -a {{ test_log_init }}
+
+echo "Sleeping 10 seconds" |& tee -a {{ test_log_init }}
+
+cockroach workload fixtures import {{ workload }} { init_options }} $url_one |& tee -a {{ test_log_init }}
+echo "Completed initialization at `date`" |& tee -a {{ test_log_init }}
+
+exit 0

@@ -1,0 +1,27 @@
+---
+- name: download and extract Cockroach DB
+  unarchive:
+    src: "{{ vars.crdb_url }}"
+    dest: /opt/
+    remote_src: yes
+
+- name: get cockroach version
+  set_fact:
+    crdb_version: "{{ ((vars.crdb_url | basename) | splitext)[0] }}"
+
+- name: print cockroach Version
+  debug:
+    var: crdb_version
+
+- name: create cockroach folder symlink
+  file:
+    src: /opt/{{ crdb_version }}
+    dest: /opt/cockroach-current
+    state: link
+  register: folder_symlink
+
+- name: create cockroach binary symlink
+  file:
+    src: /opt/cockroach-current/cockroach
+    dest: "{{ crdb_executable }}"
+    state: link

@@ -1,0 +1,8 @@
+---
+- name: build hosts file
+  lineinfile: dest="{{ os_hosts_file }}"
+    state=present
+    dest="{{ os_hosts_file }}"
+    regexp='.*{{ item }}$' line="{{ \"%-13s\" | format(hostvars[item].ansible_default_ipv4.address) }}\t{{ hostvars[item].hostname_long }} {{ hostvars[item].hostname_short }}"
+  when: hostvars[item].ansible_default_ipv4.address is defined
+  with_items: "{{ groups['all'] }}"

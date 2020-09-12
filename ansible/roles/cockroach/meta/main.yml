@@ -1,0 +1,40 @@
+---
+galaxy_info:
+
+  author: "Charles Lee"
+
+  description: "Ansible role to deploy Cockroach executable."
+
+  company: "VMware Inc."
+
+  github_branch: master
+
+  license: MIT
+
+  min_ansible_version: 2.9.2
+
+  galaxy_tags:
+    - cockroach
+    - centos
+    - debian
+    - fedora
+    - redhat
+
+  platforms:
+    - name: EL
+      versions:
+        - 7
+        - 8
+    - name: Debian
+      versions:
+        - buster
+        - stretch
+    - name: Fedora
+      versions:
+        - 27
+        - 28
+        - 29
+        - 30
+        - 31
+
+  dependencies: []

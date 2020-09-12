@@ -1,0 +1,28 @@
+#!/bin/bash
+#
+# Bank basic automation
+#
+
+url_all="\
+{% if crdb_servers is defined and crdb_servers is iterable %}
+{% for item in crdb_servers %}
+ postgres://root@{{ item }}:{{ crdb_db_port }}?sslmode=disable\
+{% endfor %}
+{% endif %}
+"
+
+echo "workload: {{ workload }}" |& tee -a {{ test_log_run }}
+echo "concurency: {{ concurency }}" |& tee -a {{ test_log_run }}
+echo "duration: {{ run_duration }}" |& tee -a {{ test_log_run }}
+echo "run options: {{ run_options }}" |& tee -a {{ test_log_run }}
+echo "url_all: $url_all" |& tee -a {{ test_log_run }}
+
+echo "Starting Bank test with concurrency $conns at `date`" |& tee -a {{ test_log_run }}
+{{ crdb_executable }} workload run {{ workload }} \
+--concurrency={{ concurency }} \
+--duration={{ run_duration }}s \
+{{ run_options }} \
+$url_all  |& tee -a {{ test_log_run }}
+echo "Completed Bank test with concurrency $conns at `date`" |& tee -a {{ test_log_run }}
+	
+exit 0

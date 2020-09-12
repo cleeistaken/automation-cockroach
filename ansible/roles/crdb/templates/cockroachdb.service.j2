@@ -1,0 +1,23 @@
+[Unit]
+Description=Cockroach DB cluster node
+After=network.target time-sync.target
+Requires=network.target time-sync.target
+RequiresMountsFor={{ datastores | join(',') }}
+#AssertPathExists=/data
+
+[Service]
+Type=notify
+ExecStart=/usr/local/bin/cockroach start --insecure {% for item in datastores %}--store={{ item }} {% endfor %}--listen-addr=%H --join={{ bootstrap | join(',') }} {% if (advertise_ip | default(crdb_advertise_addr)) %}--advertise-addr={{ inventory_hostname }}{% endif %} --cache=.25 --max-sql-memory=.25 
+WorkingDirectory={{ datastores[0] }}
+#User=cockroach
+TimeoutStopSec=60
+Restart=always
+RestartSec=10
+StandardOutput=syslog
+StandardError=syslog
+SyslogIdentifier=cockroachLimit
+NOFILE=65536
+LimitNOFILE=65536
+
+[Install]
+WantedBy=multi-user.target

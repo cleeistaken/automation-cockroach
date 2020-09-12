@@ -1,0 +1,76 @@
+---
+- name: Run database initialization
+  hosts:
+    - crdb_client[0]
+  gather_facts: yes
+  any_errors_fatal: true
+
+  vars:
+    init_file: workload-init
+    init_template: workload-init.sh.j2
+    crdb_servers: "{{ hostvars['localhost']['groups']['crdb'] }}"
+
+  vars_prompt:
+    - name: workload
+      private: no
+      prompt: "Workload (BANK, TPCC, YCSB)"
+
+  tasks:
+    - name: Get current timestamp
+      set_fact:
+        test_datetime: "{{ ansible_date_time.epoch }}"
+
+    - pause:
+        prompt: "BANK -> Number of rows to insert:"
+      when: ( workload|lower == 'bank' )
+      register: bank_rows
+      no_log: true
+      tags:
+        - always
+
+    - name: print cockroach Version
+      debug:
+        var: bank_rows.user_input
+      when: bank_rows is defined
+
+    - set_fact:
+        init_options: "--rows={{ bank_rows.user_input }}"
+        init_inserts: "{{ bank_rows.user_input }}"
+      when: ( workload|lower == 'bank' )
+
+    - name: Create output files
+      set_fact:
+        test_folder: "{{ test_datetime }}_w{{ workload }}_i{{ init_inserts }}"
+        test_init_file: "{{ init_file }}-{{ inventory_hostname }}-w{{ workload }}-i{{ init_inserts }}.sh"
+        test_log_init: "{{ init_file }}-{{ inventory_hostname }}.log"
+
+    - name: Ensures dir exists
+      file:
+        path: "{{ test_datetime }}"
+        state: directory
+        mode: 0775
+        owner: "{{ ansible_user }}"
+        group: "{{ ansible_user }}"
+
+    - name: create init script
+      template:
+        src: "{{ init_template }}"
+        dest: "{{ test_datetime }}/{{ test_init_file }}"
+        mode: 0775
+        owner: "{{ ansible_user }}"
+        group: "{{ ansible_user }}"
+
+    - name: workload init
+      shell: "cd {{ test_datetime }}; ./{{ test_init_file }}"
+
+    - name: Retrieve init file
+      fetch:
+        src: "{{ test_datetime }}/{{ test_init_file }}"
+        dest: "{{ result_folder }}/{{ test_folder }}/scripts/{{ test_init_file }}"
+        flat: yes
+
+    - name: Retrieve init log
+      fetch:
+        src: "{{ test_datetime }}/{{ test_log_init }}"
+        dest: "{{ result_folder }}/{{ test_folder }}/"
+        flat: yes
