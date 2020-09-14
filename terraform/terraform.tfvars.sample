@@ -1,0 +1,53 @@
+#
+# vCenter Server Configuration
+#
+vcenter_server = "vc.lab.local"
+vcenter_user = "administrator@vsphere.local"
+vcenter_password = "password123!"
+vcenter_insecure_ssl = true
+
+#
+# vSphere Configuration
+#
+vsphere_clusters = [
+  {
+    # See variables.tf for the description of the variable
+    vs_dc                           = "datacenter"
+    vs_cls                          = "cluster01"
+    vs_rp                           = "cockroach"
+    vs_dvs                          = "vds"
+    vs_dvs_pg_1                     = "pg01"
+    vs_dvs_pg_1_ipv4_subnet         = "10.0.0.0/24"
+    vs_dvs_pg_1_ipv4_start_hostnum  = "100"
+    vs_dvs_pg_1_ipv4_gw             = "10.0.0.1"
+    vs_ds                           = "vsan01"
+    vs_ds_sp                        = "vSAN Default Storage Policy"
+    vs_vm_template                  = "centos8.2_x64"
+    vs_vm_template_boot             = "efi"
+    vs_vm_domain                    = "wld01.lab.local"
+    vs_vm_dns                       = ["10.0.0.10", "10.0.0.11"]
+    vs_vm_dns_suffix                = ["wld01.lab.local", "lab.local"]
+  }
+]
+
+#
+# CRDB VM Configuration
+#
+crdb_client_vm_per_cluster = 1
+crdb_client_name_prefix = "crdb-client"
+crdb_client_hw_version = 17
+crdb_client_cpu_count = 4
+crdb_client_memory_gb = 16
+crdb_client_os_disk_gb = 100
+
+#
+# CRDB VM Configuration
+#
+crdb_vm_per_cluster = 4
+crdb_name_prefix = "crdb"
+crdb_hw_version = 17
+crdb_cpu_count = 4
+crdb_memory_gb = 16
+crdb_os_disk_gb = 100
+crdb_data_disk_count = 2
+crdb_data_disk_gb = 100

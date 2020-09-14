@@ -1,2 +1,6 @@
-hosts.yml
-results
+### Ansible ###
+*.retry
+
+### Generated Files ###
+inventory.yml
+results/*

@@ -1,0 +1,31 @@
+---
+- name: install development tools for ptp driver build
+  yum:
+    name: '@Development tools'
+    state: latest
+  when: ansible_distribution == 'CentOS' and ansible_distribution_version >= '8'
+
+- name: install additional requirements for ptp driver build
+  yum:
+    name:
+      - "kernel-devel-{{ ansible_kernel }}"
+      - elfutils-libelf-devel
+
+- name: get ptp source rpm
+  unarchive:
+    src: "{{ vars.vmware_ptp_url }}"
+    dest: /root/
+    remote_src: yes
+
+- name: get ptp version
+  set_fact:
+    ptp_version: "{{ (vars.vmware_ptp_url | basename | splitext)[0] }}"
+
+- name: build ptp driver
+  shell: "rpmbuild --rebuild {{ ptp_version }}/{{ ptp_version }}-1.src.rpm"
+
+- name: install and load ptp driver
+  yum:
+    name: "{{ ansible_env.HOME }}/rpmbuild/RPMS/{{ ansible_architecture }}/{{ ptp_version }}-1.{{ ansible_architecture }}.rpm"
+    state: present
+    disable_gpg_check: yes

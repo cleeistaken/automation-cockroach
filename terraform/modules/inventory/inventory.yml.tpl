@@ -19,7 +19,7 @@ all:
     crdb_client:
       children:
 %{ for cluster, hostinfo in crdb_client_servers ~}
-        crdb_client_${cluster}:
+        crdb_client_cluster_${cluster}:
           hosts:
 %{ for index, ip in hostinfo.ips ~}
             ${ip}:
@@ -28,7 +28,7 @@ all:
     crdb:
       children:
 %{ for cluster, hostinfo in crdb_servers ~}
-        crdb_${cluster}:
+        crdb_cluster_${cluster}:
           hosts:
 %{ for index, ip in hostinfo.ips ~}
             ${ip}:

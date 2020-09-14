@@ -10,10 +10,10 @@ data "vsphere_compute_cluster" "vs_cc" {
   datacenter_id = data.vsphere_datacenter.vs_dc.id
 }
 
-#resource "vsphere_resource_pool" "vs_rp" {
-#  name = var.vsphere_cluster.vs_rp
-#  parent_resource_pool_id = data.vsphere_compute_cluster.vs_cc.resource_pool_id
-#}
+resource "vsphere_resource_pool" "vs_rp" {
+  name = format("%s-%s", var.vsphere_cluster.vs_rp, var.vm_name_prefix)
+  parent_resource_pool_id = data.vsphere_compute_cluster.vs_cc.resource_pool_id
+}
 
 data "vsphere_datastore" "vs_ds" {
   name = var.vsphere_cluster.vs_ds
@@ -52,8 +52,11 @@ resource "vsphere_virtual_machine" "vm" {
   guest_id = data.vsphere_virtual_machine.vs_vm_template.guest_id
   hardware_version = var.vm_hw_version
 
+  # Template boot mode (efi or bios)
+  firmware = var.vsphere_cluster.vs_vm_template_boot
+
   # Resource Pool
-  resource_pool_id = data.vsphere_compute_cluster.vs_cc.resource_pool_id
+  resource_pool_id = vsphere_resource_pool.vs_rp.id
 
   # Home Storage
   datastore_id = data.vsphere_datastore.vs_ds.id

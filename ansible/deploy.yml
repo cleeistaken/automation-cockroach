@@ -2,10 +2,16 @@
 - name: Common configuration
   hosts:
     - crdb
-    - crdb_test_client
+    - crdb_client
   roles:
     - common
     - cockroach
+
+- name: Cockroach workload
+  hosts:
+    - crdb_client
+  roles:
+    - workload
 
 - name: CockroachDB servers
   hosts: 

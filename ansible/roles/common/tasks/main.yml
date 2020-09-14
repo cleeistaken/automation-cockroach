@@ -1,26 +1,12 @@
 ---
-- name: install requirements
-  yum:
-    name:
-      - chrony
+- name: extend root lvm partition
+  include: extend_lvm.yml
 
-- name: create chrony configuration
-  template:
-    src: "{{ chrony_conf_template }}"
-    dest: "{{ chrony_conf_file }}"
-    owner: root
-    group: root
-    mode: 0644
-  notify:
-    - restart_chrony
+- name: build the ptp driver
+  include: build_ptp_driver.yml
 
-- name: start and enable the chrony service
-  systemd:
-    name: "{{ chrony_service }}"
-    enabled: yes
-    state: started
-    masked: no
-    daemon_reload: yes
+- name: install and configure chrony
+  include: install_chrony.yml
 
 - name: configure limits.conf
   blockinfile:

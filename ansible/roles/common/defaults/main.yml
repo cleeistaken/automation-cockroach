@@ -2,3 +2,5 @@
 chrony_service: chronyd
 chrony_conf_file: /etc/chrony.conf
 chrony_conf_template: chrony.conf.j2
+
+vmware_ptp_url: https://download3.vmware.com/software/vmw-tools/LinuxDriver_For_Precisions_Clock_Virtual_Device/ptp_vmw-1.0.16123801.zip

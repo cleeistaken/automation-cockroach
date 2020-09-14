@@ -1,0 +1,23 @@
+---
+- name: install chrony
+  yum:
+    name:
+      - chrony
+
+- name: create chrony configuration
+  template:
+    src: "{{ chrony_conf_template }}"
+    dest: "{{ chrony_conf_file }}"
+    owner: root
+    group: root
+    mode: 0644
+  notify:
+    - restart_chrony
+
+- name: start and enable the chrony service
+  systemd:
+    name: "{{ chrony_service }}"
+    enabled: yes
+    state: started
+    masked: no
+    daemon_reload: yes

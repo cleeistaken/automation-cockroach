@@ -1,6 +1,3 @@
 ---
 - name: install cockroach
   include: install_cockroach.yml
-
-- name: install workload
-  include: install_workload.yml

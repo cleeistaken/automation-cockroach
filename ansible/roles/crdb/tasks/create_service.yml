@@ -1,8 +1,16 @@
 ---
-- name: install requirements
+- name: install centos 7 requirements
   yum:
     name:
       - policycoreutils-python
+  when: ansible_distribution == 'CentOS' and ansible_distribution_version >= '7' and ansible_distribution_version < '8'
+
+- name: install centos 8 requirements
+  yum:
+    name:
+      - python3-policycoreutils
+      - policycoreutils-python-utils
+  when: ansible_distribution == 'CentOS' and ansible_distribution_version >= '8'
 
 - name: configure seport tcp ports
   seport:
@@ -44,13 +52,13 @@
 - name: create cockroachdb.service
   template:
     src: "{{ crdb_service_template }}"
-    dest: "/etc/systemd/system/{{ crdb_service }}.service"
+    dest: "/lib/systemd/system/{{ crdb_service }}.service"
     mode: 0644
   register: cockroach_systemd_service
 
 - name: print inventory hostname
   debug:
-    var: "{{ inventory_hostname_short }}"
+    var: ansible_fqdn
 
 - name: start and enable the first bootstrap server
   systemd:

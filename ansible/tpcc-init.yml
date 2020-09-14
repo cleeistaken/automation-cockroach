@@ -1,0 +1,68 @@
+---
+- name: Run TPCC init
+  hosts:
+    - crdb_client[0]
+  gather_facts: yes
+  any_errors_fatal: true  
+
+  vars:
+    workload: tpcc
+    init_options: 
+    bench_init_file: tpcc-init
+    bench_init_template: tpcc-init.sh.j2
+    crdb_servers: "{{ hostvars['localhost']['groups']['crdb'] }}"
+    crdb_db_port: 26257
+    db_settings:
+      - "SET CLUSTER SETTING rocksdb.ingest_backpressure.l0_file_count_threshold = 100"
+      - "SET CLUSTER SETTING rocksdb.ingest_backpressure.pending_compaction_threshold = '5 GiB'"
+      - "SET CLUSTER SETTING schemachanger.backfiller.max_buffer_size = '5 GiB'"
+      - "SET CLUSTER SETTING kv.snapshot_rebalance.max_rate = '128 MiB'"
+      - "SET CLUSTER SETTING rocksdb.min_wal_sync_interval = '500us'"
+
+  vars_prompt:
+    - name: warehouses
+      private: no
+      prompt: "Number of warehouses"
+
+  tasks:
+    - name: Get current timestamp
+      set_fact:
+        test_datetime: "{{ ansible_date_time.epoch }}"
+
+    - name: Create output files
+      set_fact:
+        test_folder: "{{ test_datetime }}"
+        test_init_file: "{{ bench_init_file }}-{{ warehouses }}.sh"
+        test_log_init: "{{ bench_init_file }}-{{ warehouses }}-{{ inventory_hostname }}.log"
+
+    - name: Ensures dir exists
+      file: 
+        path: "{{ test_datetime }}" 
+        state: directory
+        mode: 0775
+        owner: "{{ ansible_user }}"
+        group: "{{ ansible_user }}"
+
+    - name: create init script
+      template:
+        src: "{{ bench_init_template }}"
+        dest: "{{ test_datetime }}/{{ test_init_file }}"
+        mode: 0775
+        owner: "{{ ansible_user }}"
+        group: "{{ ansible_user }}"
+
+    - name: Workload init
+      shell: "cd {{ test_datetime }}; ./{{ test_init_file }}"
+      when: inventory_hostname == play_hosts[0]
+
+    - name: Retrieve init file
+      fetch:
+        src: "{{ test_datetime }}/{{ test_init_file }}"
+        dest: "{{ result_folder }}/{{ test_folder }}/scripts/{{ inventory_hostname }}-{{ test_init_file }}"
+        flat: yes
+
+    - name: Retrieve init log
+      fetch:
+        src: "{{ test_datetime }}/{{ test_log_init }}"
+        dest: "{{ result_folder }}/{{ test_folder }}/"
+        flat: yes

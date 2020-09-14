@@ -1,0 +1,35 @@
+#!/bin/bash
+#
+# Workload tpcc init
+#
+{% if crdb_servers is defined and crdb_servers is iterable %}
+url_one="postgres://root@{{ crdb_servers[0] }}:{{ crdb_db_port }}?sslmode=disable"
+{% else %}
+echo "No servers defined" |& tee -a {{ test_log_init }}
+exit 1
+{% endif %}
+
+echo "Starting initialization at `date`" |& tee -a {{ test_log_init }}
+echo "Connection URL: $url_one" |& tee -a {{ test_log_init }}
+
+echo "Dropping previous database" |& tee -a {{ test_log_init }}
+cockroach sql --execute="DROP DATABASE IF EXISTS {{ workload }}" --url=$url_one |& tee -a {{ test_log_init }}
+
+echo "Applying database settings" |& tee -a {{ test_log_init }}
+{% if db_settings is defined and db_settings is iterable %}
+{% for item in db_settings %}
+echo "Setting {{ item }}" |& tee -a {{ test_log_init }}
+cockroach sql --url=$url_one --execute="{{ item }}"
+{% endfor %}
+{% endif %}
+
+echo "Sleeping 5 seconds" |& tee -a {{ test_log_init }}
+sleep 5
+
+echo "Importing database" |& tee -a {{ test_log_init }}
+echo "Warehouses: {{ warehouses }}" |& tee -a {{ test_log_init }}
+{% if init_options is defined %}echo "Options: {{ init_options }}" |& tee -a {{ test_log_init }}{% endif %}
+
+cockroach workload fixtures import {{ workload }} --warehouses={{ warehouses }} {% if init_options is defined %}{{ init_options }}{% endif %} "$url_one" |& tee -a {{ test_log_init }}
+
+echo "Completed initialization at `date`" |& tee -a {{ test_log_init }}

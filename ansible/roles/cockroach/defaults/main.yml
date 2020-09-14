@@ -2,9 +2,7 @@
 #
 # Cockroach defaults
 #
-
 crdb_executable: /usr/local/bin/cockroach
-workload_executable: /usr/local/bin/workload
 
 #
 # EOF

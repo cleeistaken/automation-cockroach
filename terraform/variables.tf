@@ -61,6 +61,9 @@ variable vsphere_clusters {
     # Virtual Machine template to clone from
     vs_vm_template = string
 
+    # Virtual Machine template boot mode (bios/efi)
+    vs_vm_template_boot = string
+
     # Virtual machine domain name
     vs_vm_domain = string
 

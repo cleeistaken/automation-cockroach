@@ -14,4 +14,4 @@ crdb_db_user: root
 
 crdb_tcp_ports:
   - 8080
-  - 26257 
+  - 26257

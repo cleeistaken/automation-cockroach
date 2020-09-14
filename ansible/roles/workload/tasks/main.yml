@@ -1,4 +1,10 @@
 ---
+- name: install requirements
+  yum:
+    name:
+      - libstdc++
+    state: latest
+
 - name: download and extract workload executable
   get_url:
     url: "{{ vars.workload_url }}"

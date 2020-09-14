@@ -4,7 +4,7 @@ Terraform and Ansible projects to set up Cockroach DB environment and monitoring
 
 ## Prerequisites
 * Python 3
-* Ansible
+* Ansible 2.9
 * Terraform v0.13
 * CentOS / RHEL 7.6 or above
 
@@ -33,8 +33,8 @@ This is the linux system used to invoke Terraform and Ansible in order to create
 3. Clone git repository
     ```
     cd ~
-    git clone https://github.com/cleeistaken/workload-automation.git
-    cd workload-automation
+    git clone https://github.com/cleeistaken/automation-cockroach.git
+    cd automation-cockroach
     ````
 
 4. Create a Python virtual environment.
@@ -60,7 +60,6 @@ This is the linux system used to invoke Terraform and Ansible in order to create
 We create a template to address the following requirements and limitations.
 1. Need a user account and SSH key for Ansible.
 2. Current Terraform (0.13) cannot add a PTP clock device to a VMware vSphere VM. 
-3. Current CentOS and RHEL distributions do not include a driver for the PTP device. 
 
 #### VM Template Setup
 1. Create a Linux VM with a distribution and version supported by the [VMware PTP driver](https://flings.vmware.com/linux-driver-for-precision-clock-virtual-device#requirements).
@@ -73,36 +72,7 @@ We create a template to address the following requirements and limitations.
    sudo yum install open-vm-tools perl
    ```
 
-3. Log into the template VM, download, build, and install the VMware PTP clock driver for the VMware fling site.
-   ```
-   # Install build requirements
-   sudo yum update
-   sudo yum group install "Development Tools"
-   sudo yum install kernel-devel elfutils-libelf-devel wget
-   
-   # Reboot
-   sudo reboot
-   
-   # Download sources
-   wget https://download3.vmware.com/software/vmw-tools/LinuxDriver_For_Precisions_Clock_Virtual_Device/ptp_vmw-1.0.16123801.zip
-   
-   # Extract
-   unzip ptp_vmw-1.0.16123801.zip
-   
-   # Build
-   cd ptp_vmw-1.0.16123801
-   rpmbuild --rebuild ptp_vmw-1.0.16123801-1.src.rpm
-   
-   # Install vmw_ptp driver
-   sudo rpm -ivh $HOME/rpmbuild/RPMS/`uname -m`/ptp_vmw-1.0.16123801-1.`uname -m`.rpm
-   
-   # Add a user
-   sudo adduser vmware
-   sudo echo "VMware123" | passwd --stdin vmware
-   sudo usermod -aG wheel vmware
-   ```
-
-4. From the ***orchestration system*** create and upload an ssh key to the template VM.
+3. From the ***orchestration system*** create and upload a ssh key to the template VM.
    ```
    # Check and create a key if none exits
    if [ ! -f ~/.ssh/id_rsa ]; then
@@ -114,9 +84,9 @@ We create a template to address the following requirements and limitations.
    
    ```
 
-5. In vSphere convert the VM to a template to prevent any changes.
+4. In vSphere convert the VM to a template to prevent any changes.
 
-## Cockroach Cluster Deloyment
+## Cockroach Cluster Deployment
 
 
 ### Terraform
@@ -137,9 +107,9 @@ We create a template to address the following requirements and limitations.
    ```
 
 ## Ansible
-1. Configure settings
+1. Check and configure settings
    ```
-   cd ~/workload-automation/cockroach/ansible/
+   cd ~/automation-cockroach/ansible/
    vi settings.yml
    vi ansible.cfg
    ```
@@ -152,5 +122,10 @@ We create a template to address the following requirements and limitations.
 3. Run tests
    ```
    # YCSB test
-   ansible-playbook -i settings.yml -i hosts.yml ycsb.yml
+   ansible-playbook -i settings.yml -i hosts.yml ycsb-init.yml
+   ansible-playbook -i settings.yml -i hosts.yml ycsb-run.yml
+   
+   # TPCC test
+   ansible-playbook -i settings.yml -i hosts.yml tpcc-init.yml
+   ansible-playbook -i settings.yml -i hosts.yml tpcc-run.yml
    ```
