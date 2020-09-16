@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Workload tpcc init
+# Workload TPCC init
 #
 {% if crdb_servers is defined and crdb_servers is iterable %}
 url_one="postgres://root@{{ crdb_servers[0] }}:{{ crdb_db_port }}?sslmode=disable"
@@ -14,6 +14,9 @@ echo "Connection URL: $url_one" |& tee -a {{ test_log_init }}
 
 echo "Dropping previous database" |& tee -a {{ test_log_init }}
 cockroach sql --execute="DROP DATABASE IF EXISTS {{ workload }}" --url=$url_one |& tee -a {{ test_log_init }}
+
+echo "Setting replication factor to 1" |& tee -a {{ test_log_init }}
+cockroach sql --execute="ALTER RANGE default CONFIGURE ZONE USING num_replicas = 1" --url=$url_one |& tee -a {{ test_log_init }}
 
 echo "Applying database settings" |& tee -a {{ test_log_init }}
 {% if db_settings is defined and db_settings is iterable %}
@@ -31,5 +34,8 @@ echo "Warehouses: {{ warehouses }}" |& tee -a {{ test_log_init }}
 {% if init_options is defined %}echo "Options: {{ init_options }}" |& tee -a {{ test_log_init }}{% endif %}
 
 cockroach workload fixtures import {{ workload }} --warehouses={{ warehouses }} {% if init_options is defined %}{{ init_options }}{% endif %} "$url_one" |& tee -a {{ test_log_init }}
+
+echo "Setting replication factor back to 3" |& tee -a {{ test_log_init }}
+cockroach sql --execute="ALTER RANGE default CONFIGURE ZONE USING num_replicas = 3" --url=$url_one |& tee -a {{ test_log_init }}
 
 echo "Completed initialization at `date`" |& tee -a {{ test_log_init }}

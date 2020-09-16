@@ -1,0 +1,69 @@
+---
+- name: Run YSCB init
+  hosts:
+    - crdb_client
+  gather_facts: yes
+  any_errors_fatal: true  
+
+  vars:
+    workload: ycsb
+    run_options: --families=true --request-distribution=uniform --scan-length-distribution=uniform
+    bench_run_file: ycsb-run
+    bench_run_template: ycsb-run.sh.j2
+    crdb_servers: "{{ hostvars['localhost']['groups']['crdb'] }}"
+    crdb_db_port: 26257
+
+  vars_prompt:
+    - name: workload_type
+      private: no
+      prompt: "YCSB Workload type (A, B, C, D, E, or F)"
+
+    - name: run_duration
+      private: no
+      prompt: "Test duration in seconds"
+
+    - name: concurrency
+      private: no
+      prompt: "Concurrency"
+
+  tasks:
+    - name: Get current timestamp
+      set_fact:
+        test_datetime: "{{ ansible_date_time.epoch }}"
+
+    - name: Create output files
+      set_fact:
+        test_folder: "{{ test_datetime }}"
+        test_run_file: "{{ bench_run_file }}-{{ workload_type }}-{{ run_duration }}-{{ concurrency }}.sh"
+        test_log_run: "{{ bench_run_file }}-{{ workload_type }}-{{ run_duration }}-{{ concurrency }}-{{ inventory_hostname }}.log"
+
+    - name: Ensures dir exists
+      file: 
+        path: "{{ test_datetime }}" 
+        state: directory
+        mode: 0775
+        owner: "{{ ansible_user }}"
+        group: "{{ ansible_user }}"
+
+    - name: create run script
+      template:
+        src: "{{ bench_run_template }}"
+        dest: "{{ test_datetime }}/{{ test_run_file }}"
+        mode: 0775
+        owner: "{{ ansible_user }}"
+        group: "{{ ansible_user }}"
+
+    - name: Workload run
+      shell: "cd {{ test_datetime }}; ./{{ test_run_file }}"
+
+    - name: Retrieve run file
+      fetch:
+        src: "{{ test_datetime }}/{{ test_run_file }}"
+        dest: "{{ result_folder }}/{{ test_folder }}/scripts/{{ inventory_hostname }}-{{ test_run_file }}"
+        flat: yes
+
+    - name: Retrieve run log
+      fetch:
+        src: "{{ test_datetime }}/{{ test_log_run }}"
+        dest: "{{ result_folder }}/{{ test_folder }}/"
+        flat: yes

@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Workload ycsb init
+# Workload YCSB init
 #
 {% if crdb_servers is defined and crdb_servers is iterable %}
 url_one="postgres://root@{{ crdb_servers[0] }}:{{ crdb_db_port }}?sslmode=disable"

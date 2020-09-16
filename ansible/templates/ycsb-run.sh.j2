@@ -1,0 +1,26 @@
+#!/bin/bash
+#
+# Workload YCSB run
+#
+{% if crdb_servers is defined and crdb_servers is iterable %}
+url_all="{% for item in crdb_servers %}
+ postgres://root@{{ item }}:{{ crdb_db_port }}?sslmode=disable\
+{% endfor %}"
+{% else %}
+echo "No servers defined" |& tee -a {{ test_log_run }}
+exit 1
+{% endif %}
+
+echo "Starting test run at `date`" |& tee -a {{ test_log_run }}
+echo "Connection URL: $url_all" |& tee -a {{ test_log_run }}
+
+echo "Running YCSB test" |& tee -a {{ test_log_run }}
+echo "Workload Type: {{ workload_type }}" |& tee -a {{ test_log_run }}
+echo "Duration: {{ run_duration }}" |& tee -a {{ test_log_run }}
+echo "Concurrency: {{ concurrency }}" |& tee -a {{ test_log_run }}
+
+{% if run_options is defined %}echo "Options: {{ run_options }}" |& tee -a {{ test_log_run }}{% endif %}
+
+cockroach workload run {{ workload }} --workload={{ workload_type }} --concurrency={{ concurrency }} --duration={{ run_duration }}s {% if init_options is defined %}{{ init_options }}{% endif %} $url_all |& tee -a {{ test_log_run }}
+
+echo "Completed run at `date`" |& tee -a {{ test_log_run }}
