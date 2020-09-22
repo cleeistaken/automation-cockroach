@@ -4,6 +4,9 @@
 #
 {% if crdb_servers is defined and crdb_servers is iterable %}
 url_one="postgres://root@{{ crdb_servers[0] }}:{{ crdb_db_port }}?sslmode=disable"
+url_all="{% for item in crdb_servers %}
+ postgres://root@{{ item }}:{{ crdb_db_port }}?sslmode=disable\
+{% endfor %}"
 {% else %}
 echo "No servers defined" |& tee -a {{ test_log_init }}
 exit 1
@@ -30,6 +33,6 @@ echo "Importing YCSB database" |& tee -a {{ test_log_init }}
 echo "Insert count: {{ init_inserts }}" |& tee -a {{ test_log_init }}
 {% if init_options is defined %}echo "Options: {{ init_options }}" |& tee -a {{ test_log_init }}{% endif %}
 
-cockroach workload fixtures import {{ workload }} --insert-count={{ init_inserts }} {% if init_options is defined %}{{ init_options }}{% endif %} "$url_one" |& tee -a {{ test_log_init }}
+cockroach workload fixtures import {{ workload }} --insert-count={{ init_inserts }} {% if init_options is defined %}{{ init_options }}{% endif %} "$url_all" |& tee -a {{ test_log_init }}
 
 echo "Completed initialization at `date`" |& tee -a {{ test_log_init }}

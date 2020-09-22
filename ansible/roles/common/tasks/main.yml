@@ -2,6 +2,9 @@
 - name: extend root lvm partition
   include: extend_lvm.yml
 
+- name: update the kernel
+  include: update_kernel.yml
+
 - name: build the ptp driver
   include: build_ptp_driver.yml
 

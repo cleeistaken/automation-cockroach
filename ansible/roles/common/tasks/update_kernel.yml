@@ -1,0 +1,11 @@
+---
+- name: install latest kernel
+  yum:
+    name:
+      - kernel
+    state: latest
+  notify:
+    - restart_chrony
+
+- name: re-gather facts
+  setup:

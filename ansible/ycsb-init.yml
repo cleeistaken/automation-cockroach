@@ -12,12 +12,12 @@
     bench_init_template: ycsb-init.sh.j2
     crdb_servers: "{{ hostvars['localhost']['groups']['crdb'] }}"
     crdb_db_port: 26257
-    db_settings:
-      - "SET CLUSTER SETTING rocksdb.ingest_backpressure.l0_file_count_threshold = 20"            # Def. 20
-      - "SET CLUSTER SETTING rocksdb.ingest_backpressure.pending_compaction_threshold = '2 GiB'"  # Def. 2.0 GiB
-      - "SET CLUSTER SETTING schemachanger.backfiller.max_buffer_size = '512 MiB'"                # Def. 512 MiB
-      - "SET CLUSTER SETTING kv.snapshot_rebalance.max_rate = '8 MiB'"                            # Def. 8.0 MiB
-      - "SET CLUSTER SETTING rocksdb.min_wal_sync_interval = '0us'"                               # Def. 00:00:00
+    #db_settings:
+    #  - "SET CLUSTER SETTING rocksdb.ingest_backpressure.l0_file_count_threshold = 20"            # Def. 20
+    #  - "SET CLUSTER SETTING rocksdb.ingest_backpressure.pending_compaction_threshold = '2 GiB'"  # Def. 2.0 GiB
+    #  - "SET CLUSTER SETTING schemachanger.backfiller.max_buffer_size = '512 MiB'"                # Def. 512 MiB
+    #  - "SET CLUSTER SETTING kv.snapshot_rebalance.max_rate = '8 MiB'"                            # Def. 8.0 MiB
+    #  - "SET CLUSTER SETTING rocksdb.min_wal_sync_interval = '0us'"                               # Def. 00:00:00
 
   vars_prompt:
     - name: init_inserts
