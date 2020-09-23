@@ -1,0 +1,79 @@
+---
+- name: create connection url
+  set_fact:
+    url: "postgres://root@{{ play_hosts[0] }}:26257?sslmode=disable"
+
+- name: create sql query to set and get the organization
+  set_fact:
+    sql_set_org: "SET CLUSTER SETTING cluster.organization = '{{ crdb_organization }}';"
+    sql_get_org: "SHOW CLUSTER SETTING cluster.organization;"
+  when: crdb_organization is defined
+
+- name: get current organization
+  shell: "{{ crdb_executable }} sql --execute=\"{{ sql_get_org }}\" --url=\"{{ url }}\""
+  register: stdout_current_org
+  when: sql_get_org is defined
+
+- name: parse current organization
+  set_fact:
+    current_org: "{{ stdout_current_org.stdout_lines[1] }}"
+    change_org: "{{ stdout_current_org.stdout_lines[1] != crdb_organization }}"
+  when: sql_get_org is defined
+
+- name: print current organization
+  debug:
+    var: current_org
+  when: current_org is defined
+
+- name: set the organization
+  shell: "{{ crdb_executable }} sql --execute=\"{{ sql_set_org }}\" --url=\"{{ url }}\""
+  register: stdout_set_org
+  when: current_org is defined and change_org
+
+- name: get updated organization
+  shell: "{{ crdb_executable }} sql --execute=\"{{ sql_get_org }}\" --url=\"{{ url }}\""
+  register: stdout_updated_org
+  when: current_org is defined and change_org
+
+- name: print updated organization
+  debug:
+    var: stdout_updated_org.stdout_lines[1]
+  when: current_org is defined and change_org
+
+- name: create sql query to set and get the license query
+  set_fact:
+    sql_set_lic: "SET CLUSTER SETTING enterprise.license = '{{ crdb_license }}';" 
+    sql_get_lic: "SHOW CLUSTER SETTING enterprise.license;"
+  when: crdb_license is defined
+
+- name: get current license
+  shell: "{{ crdb_executable }} sql --execute=\"{{ sql_get_lic }}\" --url=\"{{ url }}\""
+  register: stdout_current_lic
+  when: sql_get_lic is defined
+     
+- name: parse current license
+  set_fact:
+    current_lic: "{{ stdout_current_lic.stdout_lines[1] }}"
+    change_lic: "{{ stdout_current_lic.stdout_lines[1] != crdb_license }}"
+  when: sql_get_lic is defined
+
+- name: print current license
+  debug:
+    var: current_lic
+  when: current_lic is defined
+
+- name: set the license
+  shell: "{{ crdb_executable }} sql --execute=\"{{ sql_set_lic }}\" --url=\"{{ url }}\""
+  register: stdout_set_lic
+  when: current_lic is defined and change_lic
+
+- name: get updated license
+  shell: "{{ crdb_executable }} sql --execute=\"{{ sql_get_lic }}\" --url=\"{{ url }}\""
+  register: stdout_updated_lic
+  when: current_lic is defined and change_lic
+
+- name: print license
+  debug:
+    var: stdout_lic.stdout_lines[1]
+  when: current_lic is defined and change_lic
+

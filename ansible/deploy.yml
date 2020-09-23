@@ -24,11 +24,15 @@
 - name: Cockroach workload
   hosts:
     - crdb_client
-  roles:
+  roles: 
     - workload
 
 - name: CockroachDB servers
-  hosts: 
+  hosts: crdb
+  roles: 
     - crdb
+
+- name: CockroachDB license
+  hosts: crdb[0]
   roles:
-    - crdb
+    - crdb_license
