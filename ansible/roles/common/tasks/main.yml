@@ -5,12 +5,6 @@
 - name: update the kernel
   include: update_kernel.yml
 
-- name: build the ptp driver
-  include: build_ptp_driver.yml
-
-- name: install and configure chrony
-  include: install_chrony.yml
-
 - name: configure limits.conf
   blockinfile:
     path: /etc/security/limits.conf

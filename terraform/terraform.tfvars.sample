@@ -31,7 +31,7 @@ vsphere_clusters = [
 ]
 
 #
-# CRDB VM Configuration
+# CRDB Client VM Configuration
 #
 crdb_client_vm_per_cluster = 1
 crdb_client_name_prefix = "crdb-client"

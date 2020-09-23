@@ -28,12 +28,20 @@ This is the linux system used to invoke Terraform and Ansible in order to create
 
     # Install
     sudo mv ./terraform /usr/bin/
+    
+    # Remove zip file
+    rm terraform_*_linux_amd64.zip
     ```
 
 3. Clone git repository
     ```
+    # Change to home directory
     cd ~
+   
+    # Clone git repository
     git clone https://github.com/cleeistaken/automation-cockroach.git
+    
+    # Change into git repository
     cd automation-cockroach
     ````
 
@@ -80,7 +88,7 @@ We create a template to address the following requirements and limitations.
    fi
    
    # Copy to the template VM
-   ssh-copy-id vmware@<ip of the vm>
+   ssh-copy-id root@<ip of the vm>
    
    ```
 
@@ -92,7 +100,10 @@ We create a template to address the following requirements and limitations.
 ### Terraform
 1. Initialize Terraform
    ```
+   # Change to Terraform folder
    cd ~/workload-automation/cockroach/terraform/
+   
+   # Initialize
    terraform init
    ```
 

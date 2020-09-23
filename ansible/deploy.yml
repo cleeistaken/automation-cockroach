@@ -7,6 +7,20 @@
     - common
     - cockroach
 
+- name: Build and load PTP driver
+  hosts:
+    - crdb
+    - crdb_client
+  roles:
+    - ptp_driver
+
+- name: Install and configure Chrony
+  hosts:
+    - crdb
+    - crdb_client
+  roles:
+    - chrony
+
 - name: Cockroach workload
   hosts:
     - crdb_client

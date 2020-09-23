@@ -1,0 +1,4 @@
+---
+- name: reboot_machine
+  reboot:
+    reboot_timeout: 300

@@ -1,0 +1,7 @@
+---
+- name: restart_chrony
+  systemd:
+    name: chronyd
+    enabled: yes
+    state: restarted
+    masked: no
