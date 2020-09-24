@@ -6,7 +6,7 @@
   any_errors_fatal: true
 
   vars:
-    workload: ycsb
+    workload: tpcc
     run_options:
     bench_run_file: tpcc-run
     bench_run_template: tpcc-run.sh.j2
@@ -15,8 +15,8 @@
 
   vars_prompt:
     - name: warehouses
-        private: no
-        prompt: "Number of warehouses"
+      private: no
+      prompt: "Number of warehouses"
 
     - name: run_duration
       private: no
@@ -30,8 +30,8 @@
     - name: Create output files
       set_fact:
         test_folder: "{{ test_datetime }}"
-        test_run_file: "{{ bench_run_file }}-{{ workload_type }}-{{ run_duration }}-{{ concurrency }}.sh"
-        test_log_run: "{{ bench_run_file }}-{{ workload_type }}-{{ run_duration }}-{{ concurrency }}-{{ inventory_hostname }}.log"
+        test_run_file: "{{ bench_run_file }}-{{ workload }}-{{ warehouses }}-{{ run_duration }}.sh"
+        test_log_run: "{{ bench_run_file }}-{{ workload }}-{{ warehouses }}-{{ run_duration }}-{{ inventory_hostname }}.log"
 
     - name: Ensures dir exists
       file:
@@ -63,3 +63,4 @@
         src: "{{ test_datetime }}/{{ test_log_run }}"
         dest: "{{ result_folder }}/{{ test_folder }}/"
         flat: yes
+

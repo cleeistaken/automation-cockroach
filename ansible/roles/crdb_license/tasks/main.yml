@@ -16,8 +16,8 @@
 
 - name: parse current organization
   set_fact:
-    current_org: "{{ stdout_current_org.stdout_lines[1] }}"
-    change_org: "{{ stdout_current_org.stdout_lines[1] != crdb_organization }}"
+    current_org: "{{ stdout_current_org.stdout_lines[1] | default('not set') }}"
+    change_org: "{{ stdout_current_org.stdout_lines[1] | default('not set') != crdb_organization }}"
   when: sql_get_org is defined
 
 - name: print current organization
@@ -53,8 +53,8 @@
      
 - name: parse current license
   set_fact:
-    current_lic: "{{ stdout_current_lic.stdout_lines[1] }}"
-    change_lic: "{{ stdout_current_lic.stdout_lines[1] != crdb_license }}"
+    current_lic: "{{ stdout_current_lic.stdout_lines[1] | default('not set') }}"
+    change_lic: "{{ stdout_current_lic.stdout_lines[1] | default('not set') != crdb_license }}"
   when: sql_get_lic is defined
 
 - name: print current license
@@ -64,7 +64,6 @@
 
 - name: set the license
   shell: "{{ crdb_executable }} sql --execute=\"{{ sql_set_lic }}\" --url=\"{{ url }}\""
-  register: stdout_set_lic
   when: current_lic is defined and change_lic
 
 - name: get updated license
@@ -74,6 +73,6 @@
 
 - name: print license
   debug:
-    var: stdout_lic.stdout_lines[1]
+    var: stdout_updated_lic.stdout_lines[1]
   when: current_lic is defined and change_lic
 
