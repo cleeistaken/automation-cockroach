@@ -1,17 +1,15 @@
 ---
 - name: Run TPCC test
-  hosts:
-    - crdb_client
+  hosts: "{{ test_hosts | default('crdb_client') }}"
   gather_facts: yes
   any_errors_fatal: true
 
   vars:
     workload: tpcc
-    run_options:
+    run_options: "--ramp=60s --partitions={{ crdb_rack_count }}"
     bench_run_file: tpcc-run
     bench_run_template: tpcc-run.sh.j2
     crdb_servers: "{{ hostvars['localhost']['groups']['crdb'] }}"
-    crdb_db_port: 26257
 
   vars_prompt:
     - name: warehouses
@@ -31,7 +29,8 @@
       set_fact:
         test_folder: "{{ test_datetime }}"
         test_run_file: "{{ bench_run_file }}-{{ workload }}-{{ warehouses }}-{{ run_duration }}.sh"
-        test_log_run: "{{ bench_run_file }}-{{ workload }}-{{ warehouses }}-{{ run_duration }}-{{ inventory_hostname }}.log"
+        test_run_histogram: "{{ bench_run_file }}-{{ workload }}-{{ warehouses }}-{{ run_duration }}.histogram.ndjson"
+        test_run_log: "{{ bench_run_file }}-{{ workload }}-{{ warehouses }}-{{ run_duration }}-{{ inventory_hostname }}.log"
 
     - name: Ensures dir exists
       file:
@@ -60,7 +59,12 @@
 
     - name: Retrieve run log
       fetch:
-        src: "{{ test_datetime }}/{{ test_log_run }}"
+        src: "{{ test_datetime }}/{{ test_run_log }}"
         dest: "{{ result_folder }}/{{ test_folder }}/"
         flat: yes
 
+    - name: Retrieve histogram
+      fetch:
+        src: "{{ test_datetime }}/{{ test_run_histogram }}"
+        dest: "{{ result_folder }}/{{ test_folder }}/"
+        flat: yes

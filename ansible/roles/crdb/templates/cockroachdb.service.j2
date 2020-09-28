@@ -7,7 +7,7 @@ RequiresMountsFor={{ datastores | join(',') }}
 
 [Service]
 Type=notify
-ExecStart=/usr/local/bin/cockroach start --insecure {% for item in datastores %}--store={{ item }} {% endfor %}--listen-addr=%H --join={{ bootstrap | join(',') }} {% if (advertise_ip | default(crdb_advertise_addr)) %}--advertise-addr={{ inventory_hostname }}{% endif %} --cache=.25 --max-sql-memory=.25 
+ExecStart=/usr/local/bin/cockroach start --insecure {% for item in datastores %}--store={{ item }} {% endfor %}--listen-addr=%H --join={{ bootstrap | join(',') }} {% if (advertise_ip | default(crdb_advertise_addr)) %}--advertise-addr={{ inventory_hostname }}{% endif %} --cache=.25 --max-sql-memory=.25 --locality=rack={{groups['crdb'].index(inventory_hostname) % (crdb_rack_count | default(1)) }}
 WorkingDirectory={{ datastores[0] }}
 #User=cockroach
 TimeoutStopSec=60

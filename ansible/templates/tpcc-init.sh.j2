@@ -5,37 +5,37 @@
 {% if crdb_servers is defined and crdb_servers is iterable %}
 url_one="postgres://root@{{ crdb_servers[0] }}:{{ crdb_db_port }}?sslmode=disable"
 {% else %}
-echo "No servers defined" |& tee -a {{ test_log_init }}
+echo "No servers defined" |& tee -a {{ test_init_log }}
 exit 1
 {% endif %}
 
-echo "Starting initialization at `date`" |& tee -a {{ test_log_init }}
-echo "Connection URL: $url_one" |& tee -a {{ test_log_init }}
+echo "Starting initialization at `date`" |& tee -a {{ test_init_log }}
+echo "Connection URL: $url_one" |& tee -a {{ test_init_log }}
 
-echo "Dropping previous database" |& tee -a {{ test_log_init }}
-cockroach sql --execute="DROP DATABASE IF EXISTS {{ workload }}" --url=$url_one |& tee -a {{ test_log_init }}
+echo "Dropping previous database" |& tee -a {{ test_init_log }}
+cockroach sql --execute="DROP DATABASE IF EXISTS {{ workload }}" --url=$url_one |& tee -a {{ test_init_log }}
 
-echo "Setting replication factor to 1" |& tee -a {{ test_log_init }}
-cockroach sql --execute="ALTER RANGE default CONFIGURE ZONE USING num_replicas = 1" --url=$url_one |& tee -a {{ test_log_init }}
+#echo "Setting replication factor to 1" |& tee -a {{ test_init_log }}
+#cockroach sql --execute="ALTER RANGE default CONFIGURE ZONE USING num_replicas = 1" --url=$url_one |& tee -a {{ test_init_log }}
 
-echo "Applying database settings" |& tee -a {{ test_log_init }}
+echo "Applying database settings" |& tee -a {{ test_init_log }}
 {% if db_settings is defined and db_settings is iterable %}
 {% for item in db_settings %}
-echo "Setting {{ item }}" |& tee -a {{ test_log_init }}
+echo "Setting {{ item }}" |& tee -a {{ test_init_log }}
 cockroach sql --url=$url_one --execute="{{ item }}"
 {% endfor %}
 {% endif %}
 
-echo "Sleeping 5 seconds" |& tee -a {{ test_log_init }}
+echo "Sleeping 5 seconds" |& tee -a {{ test_init_log }}
 sleep 5
 
-echo "Importing database" |& tee -a {{ test_log_init }}
-echo "Warehouses: {{ warehouses }}" |& tee -a {{ test_log_init }}
-{% if init_options is defined %}echo "Options: {{ init_options }}" |& tee -a {{ test_log_init }}{% endif %}
+echo "Importing database" |& tee -a {{ test_init_log }}
+echo "Warehouses: {{ warehouses }}" |& tee -a {{ test_init_log }}
+{% if init_options is defined %}echo "Options: {{ init_options }}" |& tee -a {{ test_init_log }}{% endif %}
 
-cockroach workload fixtures import {{ workload }} --warehouses={{ warehouses }} {% if init_options is defined %}{{ init_options }}{% endif %} "$url_one" |& tee -a {{ test_log_init }}
+cockroach workload fixtures import {{ workload }} --warehouses={{ warehouses }} {% if init_options is defined %}{{ init_options }}{% endif %} "$url_one" |& tee -a {{ test_init_log }}
 
-echo "Setting replication factor back to 3" |& tee -a {{ test_log_init }}
-cockroach sql --execute="ALTER RANGE default CONFIGURE ZONE USING num_replicas = 3" --url=$url_one |& tee -a {{ test_log_init }}
+#echo "Setting replication factor back to 3" |& tee -a {{ test_init_log }}
+#cockroach sql --execute="ALTER RANGE default CONFIGURE ZONE USING num_replicas = 3" --url=$url_one |& tee -a {{ test_init_log }}
 
-echo "Completed initialization at `date`" |& tee -a {{ test_log_init }}
+echo "Completed initialization at `date`" |& tee -a {{ test_init_log }}

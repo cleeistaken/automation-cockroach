@@ -64,7 +64,10 @@ resource "vsphere_virtual_machine" "vm" {
 
   # Hardware Configuration
   num_cpus = var.vm_cpu_count
+  cpu_hot_add_enabled = false
+  cpu_hot_remove_enabled = false
   memory = var.vm_memory_gb * 1024
+  memory_hot_add_enabled = false
 
   # Although it is possible to add multiple disk controllers, there is
   # no way as of v0.13 to assign a disk to a controller. All disks are
