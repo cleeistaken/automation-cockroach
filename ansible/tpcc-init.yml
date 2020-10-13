@@ -11,7 +11,6 @@
     bench_init_file: tpcc-init
     bench_init_template: tpcc-init.sh.j2
     crdb_servers: "{{ hostvars['localhost']['groups']['crdb'] }}"
-    crdb_db_port: 26257
     db_settings:
       - "SET CLUSTER SETTING rocksdb.ingest_backpressure.l0_file_count_threshold = 100"
       - "SET CLUSTER SETTING rocksdb.ingest_backpressure.pending_compaction_threshold = '5 GiB'"
@@ -33,7 +32,7 @@
       set_fact:
         test_folder: "{{ test_datetime }}"
         test_init_file: "{{ bench_init_file }}-{{ warehouses }}.sh"
-        test_log_init: "{{ bench_init_file }}-{{ warehouses }}-{{ inventory_hostname }}.log"
+        test_init_log: "{{ bench_init_file }}-{{ warehouses }}-{{ inventory_hostname }}.log"
 
     - name: Ensures dir exists
       file: 
@@ -63,6 +62,6 @@
 
     - name: Retrieve init log
       fetch:
-        src: "{{ test_datetime }}/{{ test_log_init }}"
+        src: "{{ test_datetime }}/{{ test_init_log }}"
         dest: "{{ result_folder }}/{{ test_folder }}/"
         flat: yes

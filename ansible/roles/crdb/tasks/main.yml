@@ -8,3 +8,6 @@
 
 - name: create, enable, and start CockroachDB service
   include: create_service.yml
+
+- name: configure cluster
+  include: configure_cluster.yml

@@ -1,0 +1,5 @@
+---
+- name: configure debugging mode
+  shell:  "{{ crdb_executable }} sql --execute=\"SET CLUSTER SETTING server.remote_debugging.mode = '{{ crdb_remote_debugging_mode }}'\" --url=\"postgres://root@{{ play_hosts[0] }}:{{ crdb_db_port }}?sslmode=disable\""
+  when: (crdb_remote_debugging_mode is defined) and (inventory_hostname == play_hosts[0])
+
