@@ -45,9 +45,8 @@ variable vsphere_clusters {
     # Portgroup 1 IPv4 subnet in CIDR notation (e.g. 10.0.0.0/24)
     vs_dvs_pg_1_ipv4_subnet = string
 
-    # Portgroup 1 IPv4 address based on the subnet
-    # Ref. https://www.terraform.io/docs/configuration/functions/cidrhost.html
-    vs_dvs_pg_1_ipv4_start_hostnum = number
+    # Portgroup 1 IPv4 addresses
+    vs_dvs_pg_1_ipv4_ips = list(string)
 
     # Portgroup 1 IPv4 gateway address
     vs_dvs_pg_1_ipv4_gw = string
@@ -79,75 +78,60 @@ variable vsphere_clusters {
 # CRDB Client
 #
 variable crdb_client_vm_per_cluster {
+  description = "The number of CRDB client VM to create in the vSphere Cluster."
   type = number
-}
-
-variable crdb_client_cpu_count {
-  type = number
-  default = 4
-}
-
-variable crdb_client_memory_gb {
-  type = number
-  default = 16384
-}
-
-variable crdb_client_hw_version {
-  type = number
-  default = 17
-}
-
-variable crdb_client_os_disk_gb {
-  type = number
-  default = 100
 }
 
 variable crdb_client_name_prefix {
+  description = "The name prefix for the CRDB client VM."
   type = string
   default = "crdb-client"
 }
 
+variable crdb_client_vm_anti_affinity {
+  description = "Create a DRS anti-affinity rule for the CRDB client VM."
+  type = bool
+  default = true
+}
 
+variable crdb_client {
+  description = "CRDB client VM virtual hardware configuration."
+  type = object({
+    cpu_count = number
+    memory_gb = number
+    hw_version = number
+    os_disk_gb = number
+  })
+}
 
 #
 # CRDB
 #
 variable crdb_vm_per_cluster {
+  description = "The number of CRDB VM to create in the vSphere Cluster."
   type = number
-}
-
-variable crdb_cpu_count {
-  type = number
-  default = 4
-}
-
-variable crdb_memory_gb {
-  type = number
-  default = 16384
-}
-
-variable crdb_hw_version {
-  type = number
-  default = 17
-}
-
-variable crdb_os_disk_gb {
-  type = number
-  default = 100
-}
-
-variable crdb_data_disk_count {
-  type = number
-  default = 1
-}
-
-variable crdb_data_disk_gb {
-  type = number
-  default = 250
 }
 
 variable crdb_name_prefix {
+  description = "The name prefix for the CRDB VM."
   type = string
   default = "crdb"
 }
 
+variable crdb_vm_anti_affinity {
+  description = "Create a DRS anti-affinity rule for the CRDB VM."
+  type = bool
+  default = true
+}
+
+variable crdb {
+  description = "CRDB VM virtual hardware configuration."
+  type = object({
+    cpu_count = number
+    memory_gb = number
+    hw_version = number
+    os_disk_gb = number
+    data_disk_count = number
+    data_disk_gb = number
+  })
+}

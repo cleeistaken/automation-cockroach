@@ -4,34 +4,34 @@
 ---
 all:
   hosts:
-%{ for cluster, hostinfo in crdb_servers ~} %{ for index, ip in hostinfo.ips ~}
-    ${ip}:
-      hostname_short: ${ hostinfo.hostnames_short[index] }
-      hostname_long: ${ hostinfo.hostnames_long[index] }
-%{ endfor ~}%{ endfor ~}
-%{ for cluster, hostinfo in crdb_client_servers ~}%{ for index, ip in hostinfo.ips ~}
-    ${ip}:
-      hostname_short: ${ hostinfo.hostnames_short[index] }
-      hostname_long: ${ hostinfo.hostnames_long[index] }
-%{ endfor ~}%{ endfor ~}
+%{ for item in cockroach ~}%{ for types in item.cockroach.cluster ~}%{ for vm in types ~}
+    ${ vm.clone[0].customize[0].network_interface[0].ipv4_address }:
+      name: ${ vm.name }
+      hostname: ${ vm.clone[0].customize[0].linux_options[0].host_name }.${ vm.clone[0].customize[0].linux_options[0].domain }
+%{ endfor ~}%{ endfor ~}%{ endfor ~}
 
   children:
     crdb_client:
       children:
-%{ for cluster, hostinfo in crdb_client_servers ~}
-        crdb_client_cluster_${cluster}:
+%{ for item in cockroach ~}
+        crdb_client_${ item.cockroach.cluster_id }:
           hosts:
-%{ for index, ip in hostinfo.ips ~}
-            ${ip}:
+%{ for vm in item.cockroach.cluster.crdb_client ~}
+            ${ vm.clone[0].customize[0].network_interface[0].ipv4_address }:
 %{ endfor ~}
 %{ endfor ~}
+
     crdb:
       children:
-%{ for cluster, hostinfo in crdb_servers ~}
-        crdb_cluster_${cluster}:
+%{ for item in cockroach ~}
+        crdb_${ item.cockroach.cluster_id }:
           hosts:
-%{ for index, ip in hostinfo.ips ~}
-            ${ip}:
+%{ for vm in item.cockroach.cluster.crdb ~}
+            ${ vm.clone[0].customize[0].network_interface[0].ipv4_address }:
+              data_dir:
+%{ for i in range(1, length(vm.disk)) ~}
+                  - /data${ (i - 1) }
+%{ endfor ~}
 %{ endfor ~}
 %{ endfor ~}
 

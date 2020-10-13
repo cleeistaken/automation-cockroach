@@ -1,10 +1,10 @@
 #
 # vCenter Server Configuration
 #
-vcenter_server = "vc.lab.local"
-vcenter_user = "administrator@vsphere.local"
-vcenter_password = "password123!"
-vcenter_insecure_ssl = true
+vcenter_server                      = "vc.lab.local"
+vcenter_user                        = "administrator@vsphere.local"
+vcenter_password                    = "password123!"
+vcenter_insecure_ssl                = true
 
 #
 # vSphere Configuration
@@ -18,7 +18,27 @@ vsphere_clusters = [
     vs_dvs                          = "vds"
     vs_dvs_pg_1                     = "pg01"
     vs_dvs_pg_1_ipv4_subnet         = "10.0.0.0/24"
-    vs_dvs_pg_1_ipv4_start_hostnum  = "100"
+    vs_dvs_pg_1_ipv4_ips            = ["10.0.0.100",
+                                       "10.0.0.101",
+                                       "10.0.0.102",
+                                       "10.0.0.103",
+                                       "10.0.0.104",
+                                       "10.0.0.105",
+                                       "10.0.0.106",
+                                       "10.0.0.107",
+                                       "10.0.0.108",
+                                       "10.0.0.109",
+                                       "10.0.0.110",
+                                       "10.0.0.111",
+                                       "10.0.0.112",
+                                       "10.0.0.113",
+                                       "10.0.0.114",
+                                       "10.0.0.115",
+                                       "10.0.0.116",
+                                       "10.0.0.117",
+                                       "10.0.0.118",
+                                       "10.0.0.119",
+                                       "10.0.0.120"]
     vs_dvs_pg_1_ipv4_gw             = "10.0.0.1"
     vs_ds                           = "vsan01"
     vs_ds_sp                        = "vSAN Default Storage Policy"
@@ -33,21 +53,25 @@ vsphere_clusters = [
 #
 # CRDB Client VM Configuration
 #
-crdb_client_vm_per_cluster = 1
-crdb_client_name_prefix = "crdb-client"
-crdb_client_hw_version = 17
-crdb_client_cpu_count = 4
-crdb_client_memory_gb = 16
-crdb_client_os_disk_gb = 100
+crdb_client_vm_per_cluster          = 1
+crdb_client_name_prefix             = "crdb-client"
+crdb_client = {
+    cpu_count                       = 8
+    memory_gb                       = 16
+    hw_version                      = 17
+    os_disk_gb                      = 100
+}
 
 #
 # CRDB VM Configuration
 #
-crdb_vm_per_cluster = 4
-crdb_name_prefix = "crdb"
-crdb_hw_version = 17
-crdb_cpu_count = 4
-crdb_memory_gb = 16
-crdb_os_disk_gb = 100
-crdb_data_disk_count = 2
-crdb_data_disk_gb = 100
+crdb_vm_per_cluster                 = 4
+crdb_name_prefix                    = "crdb"
+crdb = {
+    cpu_count                       = 16
+    memory_gb                       = 64
+    hw_version                      = 17
+    os_disk_gb                      = 100
+    data_disk_count                 = 2
+    data_disk_gb                    = 100
+}

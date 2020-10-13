@@ -26,9 +26,8 @@ variable vsphere_cluster {
     # Portgroup 1 IPv4 subnet in CIDR notation (e.g. 10.0.0.0/24)
     vs_dvs_pg_1_ipv4_subnet = string
 
-    # Portgroup 1 IPv4 address based on the subnet
-    # Ref. https://www.terraform.io/docs/configuration/functions/cidrhost.html
-    vs_dvs_pg_1_ipv4_start_hostnum = number
+    # Portgroup 1 IPv4 addresses
+    vs_dvs_pg_1_ipv4_ips = list(string)
 
     # Portgroup 1 IPv4 gateway address
     vs_dvs_pg_1_ipv4_gw = string
@@ -57,58 +56,57 @@ variable vsphere_cluster {
 }
 
 #
-# VM Parameters
+# CRDB Client
 #
-variable vm_count {
-  description = "Number of VM to create"
+variable crdb_client_vm_per_cluster {
+  description = "The number of CRDB client VM to create in the vSphere Cluster."
   type = number
 }
 
-variable vm_name_prefix {
-  description = "VM name prefix"
+variable crdb_client_name_prefix {
+  description = "The name prefix for the CRDB client VM."
+  type = string
+  default = "crdb-client"
+}
+
+variable crdb_client_vm_anti_affinity {
+  description = "Create a DRS anti-affinity rule for the CRDB client VM."
+  type = bool
+  default = true
+}
+
+variable crdb_client {
+  description = "CRDB client VM virtual hardware configuration."
+  type = object({
+    cpu_count = number
+    memory_gb = number
+    hw_version = number
+    os_disk_gb = number
+  })
+}
+
+#
+# CRDB
+#
+variable crdb_vm_per_cluster {
+  type = number
+}
+
+variable crdb_name_prefix {
   type = string
 }
 
-variable vm_cpu_count {
-  description = "Number of vCPU"
-  type = number
-}
-
-variable vm_memory_gb {
-  description = "Amount of RAM in GB"
-  type = number
-}
-
-variable vm_os_disk_gb {
-  description = "VM OS disk size in GB"
-  type = number
-}
-
-variable vm_data_disk_count {
-  description = "Number of Data disks"
-  type = number
-  default = 0
-}
-
-variable vm_data_disk_gb {
-  description = "VM Data disk size in GB"
-  type = number
-  default = 0
-}
-
-variable vm_hw_version {
-  description = "VM hardware version (>= than template)"
-  type = number
-}
-
-variable vm_ip_offset {
-  description = "VM IP offset in cluster range"
-  type = number
-  default = 0
-}
-
-variable vm_anti_affinity {
-  description = "VM need anti-affinity"
+variable crdb_vm_anti_affinity {
   type = bool
-  default = true
+}
+
+variable crdb {
+  type = object({
+    cpu_count = number
+    memory_gb = number
+    hw_version = number
+    os_disk_gb = number
+    data_disk_count = number
+    data_disk_gb = number
+  })
 }
