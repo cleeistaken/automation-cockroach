@@ -1,0 +1,46 @@
+---
+all:
+  vars:
+    ansible_connection: ssh
+    ansible_user: root
+    ansible_ssh_private_key_file: ~/.ssh/id_rsa
+
+    # By default we only use the local PTP device. Uncomment to use NTP servers
+    # chrony_ntp_servers:
+    #  - time-a-g.nist.gov 
+    #  - time-b-g.nist.gov 
+    #  - time-c-g.nist.gov 
+    #  - time-d-g.nist.gov
+    #  - time-e-g.nist.gov
+
+    # URL for downloading the cockroach binary
+    crdb_url: https://binaries.cockroachdb.com/cockroach-v20.1.5.linux-amd64.tgz
+
+    # URL for downloading the workload binary
+    workload_url: https://edge-binaries.cockroachdb.com/cockroach/workload.LATEST
+
+    # Use the hosts file for name resolution
+    use_hosts_file: False
+
+    # Servers should advertise IP rather than hostname
+    advertise_ip: True
+
+    crdb_db_port: 26257
+   
+    crdb_management_port: 8080
+
+    result_folder: results/    
+
+    # CRDB parameters
+    crdb_rack_count: 1
+
+    # https://www.cockroachlabs.com/docs/stable/cluster-settings.html
+    # value: 'any', 'local', 'off'
+    crdb_remote_debugging_mode: 'any'
+
+    # CRDB executable installation path
+    crdb_executable: /usr/local/bin/cockroach
+
+    # CRDB license
+    #crdb_organization: 'My Organization Inc.'
+    #crdb_license: 'crl-0-0123456789ABCDEF'
