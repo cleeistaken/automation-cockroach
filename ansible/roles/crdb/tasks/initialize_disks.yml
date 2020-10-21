@@ -7,7 +7,7 @@
 - name: get disks (/dev/sd*) except sda (OS)
   set_fact:
     disks: "{{ disks|default([]) + [ '/dev/' ~ item ] }}"
-  loop: "{{ hostvars[inventory_hostname].ansible_devices.keys() | map('regex_search', 'sd([b-z]+|[a-z]{2})') | select('string') | list }}"
+  loop: "{{ hostvars[inventory_hostname].ansible_devices.keys() | map('regex_search', 'sd([b-z]+|[a-z]{2})') | select('string') | list | sort }}"
 
 - name: list disks
   debug:
