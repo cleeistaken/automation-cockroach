@@ -21,6 +21,16 @@ all:
 %{ endfor ~}
 %{ endfor ~}
 
+    crdb_haproxy:
+      children:
+%{ for item in cockroach ~}
+        crdb_haproxy_${ item.cockroach.cluster_id }:
+          hosts:
+%{ for vm in item.cockroach.cluster.crdb_haproxy ~}
+            ${ vm.clone[0].customize[0].network_interface[0].ipv4_address }:
+%{ endfor ~}
+%{ endfor ~}
+
     crdb:
       children:
 %{ for item in cockroach ~}

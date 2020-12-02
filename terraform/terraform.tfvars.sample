@@ -53,8 +53,12 @@ vsphere_clusters = [
 #
 # CRDB Client VM Configuration
 #
-crdb_client_vm_per_cluster          = 1
-crdb_client_name_prefix             = "crdb-client"
+
+# Uncomment to specify a non-default value
+# crdb_client_vm_per_cluster = 1
+# crdb_client_name_prefix = "crdb-client"
+# crdb_client_vm_anti_affinity = true
+
 crdb_client = {
     cpu_count                       = 8
     memory_gb                       = 16
@@ -63,10 +67,28 @@ crdb_client = {
 }
 
 #
+# HA Proxy VM Configuration
+#
+# Uncomment to specify a non-default value
+# crdb_haproxy_vm_per_cluster = 1
+# crdb_haproxy_name_prexix = "crdb-haproxy"
+# crdb_haproxy_vm_anti_affinity = true
+
+crdb_haproxy = {
+    cpu_count                       = 4
+    memory_gb                       = 8
+    hw_version                      = 17
+    os_disk_gb                      = 80
+}
+
+#
 # CRDB VM Configuration
 #
-crdb_vm_per_cluster                 = 4
-crdb_name_prefix                    = "crdb"
+# Uncomment to specify a non-default value
+# crdb_vm_per_cluster = 4
+# crdb_name_prefix = "crdb"
+# crdb_vm_anti_affinity = true
+
 crdb = {
     cpu_count                       = 16
     memory_gb                       = 64
@@ -75,3 +97,4 @@ crdb = {
     data_disk_count                 = 2
     data_disk_gb                    = 100
 }
+

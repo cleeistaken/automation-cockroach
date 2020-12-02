@@ -1,0 +1,25 @@
+---
+- name: install requirements
+  yum:
+    name:
+      - haproxy
+      - python3-libsemanage
+    state: latest
+
+- name: create haproxy configuration
+  shell: "cockroach gen haproxy --insecure --host={{ crdb_node }} --out={{ vars.haproxy_cfg }}"
+
+- name: set haproxy_connect_any flag on and keep it persistent across reboots
+  ansible.posix.seboolean:
+    name: haproxy_connect_any
+    state: yes
+    persistent: yes
+
+- name: start and enable the chrony service
+  systemd:
+    name: "{{ haproxy_service }}"
+    enabled: yes
+    state: started
+    masked: no
+    daemon_reload: yes
+

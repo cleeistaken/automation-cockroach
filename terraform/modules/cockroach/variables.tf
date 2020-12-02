@@ -85,6 +85,35 @@ variable crdb_client {
   })
 }
 
+# CRDB HA Proxy
+variable crdb_haproxy_vm_per_cluster {
+  description = "The number of CRDB  HA Proxy VM to create in the vSphere Cluster."
+  type = number
+}
+
+variable crdb_haproxy_name_prefix {
+  description = "The name prefix for the CRDB HA Proxy VM."
+  type = string
+  default = "crdb-haproxy"
+}
+
+variable crdb_haproxy_vm_anti_affinity {
+  description = "Create a DRS anti-affinity rule for the CRDB HA Proxy VM."
+  type = bool
+  default = true
+}
+
+variable crdb_haproxy {
+  description = "CRDB HA Proxy VM virtual hardware configuration."
+  type = object({
+    cpu_count = number
+    memory_gb = number
+    hw_version = number
+    os_disk_gb = number
+  })
+}
+
+
 #
 # CRDB
 #

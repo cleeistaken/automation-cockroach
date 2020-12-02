@@ -2,32 +2,28 @@
 - name: Common configuration
   hosts:
     - crdb
+    - crdb_haproxy
     - crdb_client
   roles:
     - common
     - cockroach
 
-- name: Build and load PTP driver
+- name: Install PTP driver and chronyd
   hosts:
     - crdb
+    - crdb_haproxy
     - crdb_client
   roles:
     - ptp_driver
-
-- name: Install and configure Chrony
-  hosts:
-    - crdb
-    - crdb_client
-  roles:
     - chrony
 
-- name: Cockroach workload
+- name: Cockroach workload binary
   hosts:
     - crdb_client
   roles: 
     - workload
 
-- name: CockroachDB servers
+- name: CockroachDB service
   hosts: crdb
   roles: 
     - crdb
@@ -36,3 +32,10 @@
   hosts: crdb[0]
   roles:
     - crdb_license
+
+- name: HA Proxy
+  hosts: crdb_haproxy
+  vars:
+    crdb_node: "{{ hostvars['localhost']['groups']['crdb'][0] }}"
+  roles:
+    - crdb_haproxy

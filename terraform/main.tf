@@ -25,6 +25,12 @@ module "cockroach" {
   crdb_client_vm_anti_affinity = var.crdb_client_vm_anti_affinity
   crdb_client = var.crdb_client
 
+  # CRDB HA Proxy
+  crdb_haproxy_vm_per_cluster = var.crdb_haproxy_vm_per_cluster
+  crdb_haproxy_name_prefix = var.crdb_haproxy_name_prefix
+  crdb_haproxy_vm_anti_affinity = var.crdb_haproxy_vm_anti_affinity
+  crdb_haproxy = var.crdb_haproxy
+
   # CRDB
   crdb_vm_per_cluster = var.crdb_vm_per_cluster
   crdb_name_prefix = var.crdb_name_prefix
