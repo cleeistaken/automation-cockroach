@@ -9,13 +9,56 @@
 - name: create haproxy configuration
   shell: "cockroach gen haproxy --insecure --host={{ crdb_node }} --out={{ vars.haproxy_cfg }}"
 
+- name: add maxconn to crdb frontend
+  lineinfile:
+    path: "{{ vars.haproxy_cfg }}"
+    firstmatch: yes
+    state: present
+    insertafter: 'listen psql'
+    line: "    maxconn {{ vars.haproxy_crdb_maxconn }}"
+
+
+- name: add haproxy stats frontent
+  blockinfile:
+    path: "{{ vars.haproxy_cfg }}"
+    insertafter: EOF
+    block: |
+      listen  stats
+        bind            :{{ vars.haproxy_stats_port }}
+        mode            http
+        log             global
+
+        maxconn 10
+
+        clitimeout      100s
+        srvtimeout      100s
+        contimeout      100s
+        timeout queue   100s
+
+        stats enable
+        stats hide-version
+        stats refresh 30s
+        stats show-node
+        stats uri  /haproxy?stats
+
+
 - name: set haproxy_connect_any flag on and keep it persistent across reboots
   ansible.posix.seboolean:
     name: haproxy_connect_any
     state: yes
     persistent: yes
 
-- name: start and enable the chrony service
+- name: configure firewalld
+  firewalld:
+    port: "{{ item ~ '/tcp' }}"
+    permanent: yes
+    immediate: yes
+    state: enabled
+  loop:
+    -  "{{ vars.haproxy_stats_port }}"
+    -  "{{ vars.haproxy_crdb_port }}"
+
+- name: start and enable the haproxy service
   systemd:
     name: "{{ haproxy_service }}"
     enabled: yes

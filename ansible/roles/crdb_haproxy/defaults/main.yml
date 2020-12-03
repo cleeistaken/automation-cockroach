@@ -1,3 +1,7 @@
 ---
 haproxy_service: haproxy
 haproxy_cfg: /etc/haproxy/haproxy.cfg
+haproxy_crdb_maxconn: 48000
+haproxy_stats_port: 8888
+haproxy_crdb_port: 26257
+
