@@ -14,7 +14,8 @@ all:
     #  - time-e-g.nist.gov
 
     # URL for downloading the cockroach binary
-    crdb_url: https://binaries.cockroachdb.com/cockroach-v20.1.5.linux-amd64.tgz
+    #crdb_url: https://binaries.cockroachdb.com/cockroach-v20.1.5.linux-amd64.tgz
+    crdb_url: https://binaries.cockroachdb.com/cockroach-v20.2.2.linux-amd64.tgz
 
     # URL for downloading the workload binary
     workload_url: https://edge-binaries.cockroachdb.com/cockroach/workload.LATEST
@@ -25,10 +26,13 @@ all:
     # Servers should advertise IP rather than hostname
     advertise_ip: True
 
+    # Cockroach DB PSQL port
     crdb_db_port: 26257
    
+    # Cockroach DB management port
     crdb_management_port: 8080
 
+    # Ourput folder
     result_folder: results/    
 
     # CRDB parameters
@@ -40,6 +44,25 @@ all:
 
     # CRDB executable installation path
     crdb_executable: /usr/local/bin/cockroach
+
+    # Use PTP
+    crdb_ptp: True
+    crdb_ptp_dev: /dev/ptp0
+
+    # Use SSL
+    crdb_ssl: False
+    crdb_ssl_mode_disable: disable
+    crdb_ssl_mode_secure: verify-full&sslrootcert=/root/certs/ca.crt&sslcert=/root/certs/client.root.crt&sslkey=/root/certs/client.root.key
+
+    #
+    # Load Balancer Options
+    #
+ 
+    # Use Load Balancer (none, haproxy, other)
+    crdb_lb: none
+
+    # Other Load Balancer IP
+    crdb_lb_other_ip: 172.25.100.1
 
     # CRDB license
     #crdb_organization: 'My Organization Inc.'

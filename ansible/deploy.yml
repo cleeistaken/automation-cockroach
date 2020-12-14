@@ -39,3 +39,13 @@
     crdb_node: "{{ hostvars['localhost']['groups']['crdb'][0] }}"
   roles:
     - crdb_haproxy
+
+- name: Generate SSL certificates
+  hosts: all
+  roles:
+    - role: crdb_certs
+      when: crdb_ssl | bool
+  vars:
+    crdb_client: "{{ hostvars['localhost']['groups']['crdb_client'][0:] }}"
+    crdb_haproxy: "{{ hostvars['localhost']['groups']['crdb_haproxy'][0:] }}"
+    crdb_nodes: "{{ hostvars['localhost']['groups']['crdb'][0:] }}"

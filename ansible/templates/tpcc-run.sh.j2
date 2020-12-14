@@ -2,25 +2,14 @@
 #
 # Workload TPCC run
 #
-{% if crdb_servers is defined and crdb_servers is iterable %}
-url_all="{% for item in crdb_servers %}postgres://root@{{ item }}:{{ crdb_db_port }}?sslmode=disable {% endfor %}"
-{% else %}
-echo "No servers defined" |& tee -a {{ test_run_log }}
-exit 1
-{% endif %}
-
 echo "Starting test run at `date`" |& tee -a {{ test_run_log }}
-echo "Connection URL: $url_all" |& tee -a {{ test_run_log }}
+echo "Connection URL: {{ connection_url }}" |& tee -a {{ test_run_log }}
 
 echo "Running TPCC test" |& tee -a {{ test_run_log }}
 echo "Warehouses: {{ warehouses }}" |& tee -a {{ test_run_log }}
 echo "Duration: {{ run_duration }}" |& tee -a {{ test_run_log }}
-{% if run_options is defined %}echo "Options: {{ run_options }}" |& tee -a {{ test_run_log }}{% endif %}
+echo "Options: {{ run_options if (run_options is defined) else '' }}" |& tee -a {{ test_run_log }}
 
-cockroach workload run {{ workload }} {% if run_options is defined %}{{ run_options }}{% endif %} \
---warehouses={{ warehouses }} \
---duration={{ run_duration }}s \
---histograms={{ test_run_histogram }} \
-$url_all |& tee -a {{ test_run_log }}
+cockroach workload run {{ workload }} {% if run_options is defined %}{{ run_options }}{% endif %} --warehouses={{ warehouses }} --duration={{ run_duration }}s --histograms={{ test_run_histogram }} {{ connection_url }} |& tee -a {{ test_run_log }}
 
 echo "Completed run at `date`" |& tee -a {{ test_run_log }}

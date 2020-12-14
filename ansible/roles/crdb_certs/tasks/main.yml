@@ -1,0 +1,148 @@
+---
+- name: delete local certificate folder
+  local_action: file path=certificates state=absent
+  when: inventory_hostname == crdb_nodes[0]
+
+- name: delete previous certificate folders if they exist
+  file:
+    state: absent
+    path: "{{ item }}/"
+  with_items:
+  - certs
+  - my-safe-directory
+  when: inventory_hostname == crdb_nodes[0]
+
+- name: create remote certificate directories
+  file:
+    path: "{{ item }}"
+    state: directory
+    mode: '0755'
+  with_items:
+  - certs
+  - my-safe-directory
+  when: inventory_hostname == crdb_nodes[0]
+
+- name: create node certificate folder
+  file:
+    path: "certs/{{ item }}"
+    state: directory
+    mode: '0755'
+  with_items: "{{ crdb_nodes }}"
+  when: inventory_hostname == crdb_nodes[0]
+
+- name: generate CA certificate and key
+  shell: cockroach cert create-ca --certs-dir=certs --ca-key=my-safe-directory/ca.key --key-size=2048 --overwrite 
+  when: inventory_hostname == crdb_nodes[0]
+
+- name: certificate
+  copy:
+    remote_src: true
+    src: certs/ca.crt
+    dest: "certs/{{ item }}/ca.crt"
+  with_items: "{{ crdb_nodes }}"
+  when: inventory_hostname == crdb_nodes[0]
+
+- name: generatte crdb node certificates
+  shell:
+    cmd: >
+      cockroach cert create-node 
+      {{ item }}
+      {{ vars.hostvars[item]['hostname'] }}
+      localhost
+      127.0.0.1
+      {{ crdb_haproxy | join(' ') }}
+      --certs-dir=certs/{{ item }}
+      --ca-key=my-safe-directory/ca.key
+  with_items: "{{ crdb_nodes }}"
+  when: inventory_hostname == crdb_nodes[0]
+
+- name: Synchronization of src on the inventory host to the dest on the localhost in pull mode
+  ansible.posix.synchronize:
+    mode: pull
+    dirs: yes
+    src: "{{ item }}"
+    dest: "certificates"
+  with_items:
+    - certs
+    - my-safe-directory
+  when: inventory_hostname == crdb_nodes[0]
+
+- name: delete remote certificates folders
+  file:
+    state: absent
+    path: "{{ item }}/"
+  with_items:
+  - certs
+  - my-safe-directory
+  when: inventory_hostname == crdb_nodes[0] 
+
+- name: create remote certificate directories
+  file:
+    path: /etc/ssl/crdb
+    state: directory
+  when: inventory_hostname in crdb_nodes
+
+- name: Copy file with owner and permissions
+  copy:
+    src:  "certificates/certs/{{ inventory_hostname }}/{{ item }}"
+    dest: /etc/ssl/crdb
+    mode: '0700'
+  with_items:
+  - ca.crt
+  - node.crt
+  - node.key
+  when: inventory_hostname in crdb_nodes
+
+- name: update systemd service
+  replace:
+    path: "/lib/systemd/system/cockroachdb.service"
+    regexp: '--insecure'
+    replace: '--certs-dir=/etc/ssl/crdb'
+  when: inventory_hostname in crdb_nodes
+
+- name: restart cockroach service
+  systemd:
+    name: cockroachdb
+    state: restarted
+    daemon_reload: yes
+  when: inventory_hostname in crdb_nodes
+
+- name: create remote certificate directories on clients
+  file:
+    path: "{{ item }}"
+    state: directory
+    mode: '0755'
+  with_items:
+  - certs
+  - my-safe-directory
+  when: inventory_hostname == crdb_client[0]
+
+- name: copy ca cert to clients
+  copy:
+    src:  "certificates/certs/ca.crt"
+    dest: "certs/"
+    mode: '0700'
+  when: inventory_hostname == crdb_client[0]
+
+- name: copy ca key to clients
+  copy:
+    src:  "certificates/my-safe-directory/ca.key"
+    dest: "my-safe-directory/"
+    mode: '0700'
+  when: inventory_hostname == crdb_client[0]
+
+- name: generate client certificate
+  shell:
+    cmd: >
+      cockroach cert create-client 
+      root
+      --certs-dir=certs
+      --ca-key=my-safe-directory/ca.key
+      --overwrite
+  when: inventory_hostname == crdb_client[0]
+
+- name: create default user
+  shell: /usr/local/bin/cockroach sql --certs-dir=certs --host {{play_hosts[0]}} --execute "CREATE USER craig WITH PASSWORD 'cockroach';"
+  when: inventory_hostname == crdb_client[0]
+
+

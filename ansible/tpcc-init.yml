@@ -24,9 +24,29 @@
       prompt: "Number of warehouses"
 
   tasks:
+    - name: Set SSL mode
+      set_fact:
+        ssl_mode: "{{ crdb_ssl_mode_secure if (crdb_ssl | bool) else crdb_ssl_mode_disable }}"
+
+    - name: Print SSL mode
+      debug:
+        var: ssl_mode
+
+    - name: Build connection URL
+      set_fact:
+        connection_url: "postgres://root@{{ hostvars['localhost']['groups']['crdb'][0] }}:{{ crdb_db_port }}?sslmode={{ ssl_mode }}"
+
+    - name: Print connection URL
+      debug:
+        var: connection_url
+
     - name: Get current timestamp
       set_fact:
         test_datetime: "{{ ansible_date_time.epoch }}"
+
+    - name: Print timestamp
+      debug:
+        var: test_datetime
 
     - name: Create output files
       set_fact:

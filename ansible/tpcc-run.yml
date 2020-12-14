@@ -9,7 +9,7 @@
     run_options: "--ramp=60s --partitions={{ crdb_rack_count }} --tolerate-errors"
     bench_run_file: tpcc-run
     bench_run_template: tpcc-run.sh.j2
-    crdb_servers: "{{ hostvars['localhost']['groups']['crdb'] }}"
+    connection_url:
 
   vars_prompt:
     - name: warehouses
@@ -21,6 +21,46 @@
       prompt: "Test duration in seconds"
 
   tasks:
+    - name: Set SSL mode
+      set_fact:
+        ssl_mode: "{{ crdb_ssl_mode_secure if (crdb_ssl | bool) else crdb_ssl_mode_disable }}"
+
+    - name: Print SSL mode
+      debug:
+        var: ssl_mode
+
+    - name: Set direct connection to CRDB servers (LB none)
+      set_fact:
+        crdb_servers: "{{ hostvars['localhost']['groups']['crdb'] }}"
+      when: crdb_lb == 'none'
+
+    - name: Set haproxy connection to CRDB servers (LB haproxy)
+      set_fact:
+        crdb_servers: "{{ hostvars['localhost']['groups']['crdb_haproxy'] }}"
+      when: crdb_lb == 'haproxy'
+
+    - name: Set other LB IP to CRDB servers (LB other)
+      set_fact:
+        crdb_servers: "{{ [crdb_lb_other_ip] }}"
+      when: crdb_lb == 'other'
+   
+    - name: Print connection target
+      debug:
+        var: crdb_servers
+
+    - name: Build connection URL
+      set_fact:
+        connection_url: "{{ connection_url }} \"postgres://root@{{ item }}:{{ crdb_db_port }}?sslmode={{ ssl_mode }}\""
+      with_items: "{{ crdb_servers }}"
+
+    - name: Trim connection URL
+      set_fact:
+        connection_url: "{{ connection_url | trim }}"
+
+    - name: Print connection URL
+      debug:
+        var: connection_url
+
     - name: Get current timestamp
       set_fact:
         test_datetime: "{{ ansible_date_time.epoch }}"
@@ -47,6 +87,8 @@
         mode: 0775
         owner: "{{ ansible_user }}"
         group: "{{ ansible_user }}"
+      vars:
+        client: crdb_servers
 
     - name: Workload run
       shell: "cd {{ test_datetime }}; ./{{ test_run_file }}"
