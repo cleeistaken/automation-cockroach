@@ -21,7 +21,7 @@
   loop: "{{ vars.crdb_tcp_ports }}"
 
 - name: configure firewalld
-  firewalld:
+  ansible.posix.firewalld:
     port: "{{ item ~ '/tcp' }}"
     permanent: yes
     immediate: yes

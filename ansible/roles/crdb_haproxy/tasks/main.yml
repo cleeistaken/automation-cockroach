@@ -49,7 +49,7 @@
     persistent: yes
 
 - name: configure firewalld
-  firewalld:
+  ansible.posix.firewalld:
     port: "{{ item ~ '/tcp' }}"
     permanent: yes
     immediate: yes
